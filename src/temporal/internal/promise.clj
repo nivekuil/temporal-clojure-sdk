@@ -48,13 +48,13 @@
 
 (extend-protocol pt/IPromise
   PromiseAdapter
-  (-map
+  (-fmap
     ([it f]
      (pt/-promise (.thenApply ^Promise (.p it) (->Func (comp ->temporal f)))))
 
     ([it f executor]))
 
-  (-bind
+  (-mcat
     ([it f]
      (pt/-promise (.thenCompose ^Promise (.p it) (->Func (comp ->temporal f)))))
 
@@ -66,17 +66,7 @@
 
     ([it f executor]))
 
-  (-mapErr
-    ([it f]
-     (letfn [(handler [e]
-               (if (instance? Promise e)
-                 (f (.getCause ^Exception e))
-                 (f e)))]
-       (.exceptionally ^Promise (.p it) (->Func handler))))
-
-    ([it f executor]))
-
-  (-thenErr
+  (-merr
     ([it f]
      (letfn [(handler [v e]
                (if e
@@ -91,7 +81,7 @@
 
     ([it f executor]))
 
-  (-handle
+  (-hmap
     ([it f]
      (as-> ^Promise (.p it) $$
        (.handle $$ (->Func (comp ->temporal f)))
@@ -100,7 +90,7 @@
 
     ([it f executor]))
 
-  (-finally
+  (-fnly
     ([it f])
 
     ([it f executor])))
